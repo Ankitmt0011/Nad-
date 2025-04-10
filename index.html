@@ -2,78 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wallet WebApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nad Wallet</title>
   <style>
     body {
       margin: 0;
+      background-color: black;
+      color: white;
       font-family: sans-serif;
-      background-color: #121212;
-      color: white;
-    }
-    header {
-      padding: 12px;
-      text-align: center;
-      background: #1e1e1e;
-      font-size: 20px;
-    }
-    nav {
+      height: 100vh;
       display: flex;
-      justify-content: space-around;
-      background: #2a2a2a;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-    }
-    nav button {
-      flex: 1;
-      padding: 12px 0;
-      background: none;
-      border: none;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
+      flex-direction: column;
     }
     .tab {
+      flex: 1;
       display: none;
-      padding: 20px;
+      justify-content: center;
+      align-items: center;
     }
-    .active {
-      display: block;
+    .tab.active {
+      display: flex;
+    }
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #444;
+      padding: 10px 0;
+      background-color: black;
+    }
+    .tab-btn {
+      color: white;
+      background: none;
+      border: none;
+      font-size: 14px;
+    }
+    .tab-btn.active {
+      color: skyblue;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    a {
+      color: #38bdf8;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-
-  <header>Whitelist WebApp</header>
-
+  <!-- Wallet Tab -->
   <div id="walletTab" class="tab active">
-    <h2>Wallet</h2>
-    <p>Coming soon...</p>
+    <p style="color: skyblue; font-size: 20px;">Coming soon...</p>
   </div>
 
+  <!-- Tasks Tab -->
   <div id="tasksTab" class="tab">
-    <h2>Tasks</h2>
-    <ul>
-      <li><a href="https://t.me/yourchannel" target="_blank">✅ Join Telegram</a></li>
-      <li><a href="https://twitter.com/yourprofile" target="_blank">✅ Follow on Twitter</a></li>
-      <li><a href="https://twitter.com/yourpost" target="_blank">✅ Retweet</a></li>
-    </ul>
+    <div style="padding: 16px;">
+      <h2 style="margin-bottom: 12px;">Tasks</h2>
+      <ul>
+        <li><a href="#">Join Telegram</a></li>
+        <li><a href="#">Follow on Twitter</a></li>
+        <li><a href="#">Retweet</a></li>
+      </ul>
+    </div>
   </div>
 
-  <nav>
-    <button onclick="openTab('walletTab')">Wallet</button>
-    <button onclick="openTab('tasksTab')">Tasks</button>
-  </nav>
+  <!-- Bottom Navigation -->
+  <div class="tabs">
+    <button id="walletBtn" class="tab-btn active" onclick="switchTab('wallet')">Wallet</button>
+    <button id="tasksBtn" class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
+  </div>
 
   <script>
-    function openTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-    }
+    function switchTab(tab) {
+      document.getElementById('walletTab').classList.remove('active');
+      document.getElementById('tasksTab').classList.remove('active');
+      document.getElementById('walletBtn').classList.remove('active');
+      document.getElementById('tasksBtn').classList.remove('active');
 
-    if (window.Telegram && Telegram.WebApp) {
-      Telegram.WebApp.ready();
+      if (tab === 'wallet') {
+        document.getElementById('walletTab').classList.add('active');
+        document.getElementById('walletBtn').classList.add('active');
+      } else {
+        document.getElementById('tasksTab').classList.add('active');
+        document.getElementById('tasksBtn').classList.add('active');
+      }
     }
   </script>
 </body>
