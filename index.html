@@ -1,25 +1,80 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wallet WebApp</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #121212;
+      color: white;
+    }
+    header {
+      padding: 12px;
+      text-align: center;
+      background: #1e1e1e;
+      font-size: 20px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #2a2a2a;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    nav button {
+      flex: 1;
+      padding: 12px 0;
+      background: none;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .tab {
+      display: none;
+      padding: 20px;
+    }
+    .active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
 
-export default function Home() { const [activeTab, setActiveTab] = useState("wallet");
+  <header>Whitelist WebApp</header>
 
-return ( <div className="h-screen bg-black text-white flex flex-col"> {/* Main Content */} <div className="flex-1"> {activeTab === "wallet" && ( <div className="flex items-center justify-center h-full"> <p className="text-sky-400 text-xl">Coming soon...</p> </div> )} {activeTab === "tasks" && ( <div className="p-4"> <h2 className="text-white text-xl mb-4">Tasks</h2> <ul className="list-disc pl-5 space-y-2"> <li> <a href="#" className="text-blue-500 underline"> Join Telegram </a> </li> <li> <a href="#" className="text-blue-500 underline"> Follow on Twitter </a> </li> <li> <a href="#" className="text-blue-500 underline"> Retweet </a> </li> </ul> </div> )} </div>
-
-{/* Bottom Tabs */}
-  <div className="flex justify-around bg-black border-t border-gray-700 py-2">
-    <button
-      onClick={() => setActiveTab("wallet")}
-      className={`text-sm ${activeTab === "wallet" ? "text-sky-400" : "text-white"}`}
-    >
-      Wallet
-    </button>
-    <button
-      onClick={() => setActiveTab("tasks")}
-      className={`text-sm ${activeTab === "tasks" ? "text-sky-400" : "text-white"}`}
-    >
-      Tasks
-    </button>
+  <div id="walletTab" class="tab active">
+    <h2>Wallet</h2>
+    <p>Coming soon...</p>
   </div>
-</div>
 
-); }
+  <div id="tasksTab" class="tab">
+    <h2>Tasks</h2>
+    <ul>
+      <li><a href="https://t.me/yourchannel" target="_blank">✅ Join Telegram</a></li>
+      <li><a href="https://twitter.com/yourprofile" target="_blank">✅ Follow on Twitter</a></li>
+      <li><a href="https://twitter.com/yourpost" target="_blank">✅ Retweet</a></li>
+    </ul>
+  </div>
 
+  <nav>
+    <button onclick="openTab('walletTab')">Wallet</button>
+    <button onclick="openTab('tasksTab')">Tasks</button>
+  </nav>
+
+  <script>
+    function openTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    if (window.Telegram && Telegram.WebApp) {
+      Telegram.WebApp.ready();
+    }
+  </script>
+</body>
+</html>
