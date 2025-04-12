@@ -2,91 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nad Wallet</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .tab {
-      flex: 1;
-      display: none;
-      justify-content: center;
-      align-items: center;
-    }
-    .tab.active {
-      display: flex;
-    }
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      border-top: 1px solid #444;
-      padding: 10px 0;
-      background-color: black;
-    }
-    .tab-btn {
-      color: white;
-      background: none;
-      border: none;
-      font-size: 14px;
-    }
-    .tab-btn.active {
-      color: skyblue;
-    }
-    ul {
-      padding-left: 20px;
-    }
-    a {
-      color: #38bdf8;
-      text-decoration: underline;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Wallet Tab -->
-  <div id="walletTab" class="tab active">
-    <p style="color: skyblue; font-size: 20px;">Coming soon...</p>
-  </div>
+  <div id="app">
+    <div id="tabs">
+      <button id="walletTab" class="tab active">Wallet</button>
+      <button id="tasksTab" class="tab">Tasks</button>
+    </div>
 
-  <!-- Tasks Tab -->
-  <div id="tasksTab" class="tab">
-    <div style="padding: 16px;">
-      <h2 style="margin-bottom: 12px;">Tasks</h2>
-      <ul>
-        <li><a href="#">Join Telegram</a></li>
-        <li><a href="#">Follow on Twitter</a></li>
-        <li><a href="#">Retweet</a></li>
-      </ul>
+    <div id="walletSection" class="section">
+      <div class="center-text">Coming soon...</div>
+    </div>
+
+    <div id="tasksSection" class="section hidden">
+      <h2 class="section-title">Missions</h2>
+      <p class="section-subtitle">Complete tasks and get ND points.</p>
+
+      <div class="score-box">
+        <p><strong>Total ND Earned:</strong> <span id="totalPoints">0</span></p>
+        <p><strong>Total Referrals:</strong> <span id="totalReferrals">0</span></p>
+      </div>
+
+      <div class="task">
+        <h3>Telegram</h3>
+        <p>Join our Telegram channel and receive a reward.</p>
+        <div class="task-footer">
+          <span>100 ND</span>
+          <button onclick="completeTask('telegram')">Start</button>
+        </div>
+      </div>
+
+      <div class="task">
+        <h3>Twitter Follow</h3>
+        <p>Follow our Twitter profile to get rewarded.</p>
+        <div class="task-footer">
+          <span>100 ND</span>
+          <button onclick="completeTask('twitterFollow')">Start</button>
+        </div>
+      </div>
+
+      <div class="task">
+        <h3>Retweet</h3>
+        <p>Retweet our pinned tweet to earn points.</p>
+        <div class="task-footer">
+          <span>50 ND</span>
+          <button onclick="completeTask('retweet')">Start</button>
+        </div>
+      </div>
+
+      <div class="task">
+        <h3>Referral</h3>
+        <p>Invite your friends to earn rewards.</p>
+        <div class="task-footer">
+          <span>100 ND / Invite</span>
+          <button onclick="showReferral()">Refer</button>
+        </div>
+      </div>
+
+      <div id="referralBox" class="hidden">
+        <input type="text" value="https://t.me/YourBot?start=ref123" readonly />
+        <p>Share your referral link above.</p>
+      </div>
     </div>
   </div>
 
-  <!-- Bottom Navigation -->
-  <div class="tabs">
-    <button id="walletBtn" class="tab-btn active" onclick="switchTab('wallet')">Wallet</button>
-    <button id="tasksBtn" class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
-  </div>
-
-  <script>
-    function switchTab(tab) {
-      document.getElementById('walletTab').classList.remove('active');
-      document.getElementById('tasksTab').classList.remove('active');
-      document.getElementById('walletBtn').classList.remove('active');
-      document.getElementById('tasksBtn').classList.remove('active');
-
-      if (tab === 'wallet') {
-        document.getElementById('walletTab').classList.add('active');
-        document.getElementById('walletBtn').classList.add('active');
-      } else {
-        document.getElementById('tasksTab').classList.add('active');
-        document.getElementById('tasksBtn').classList.add('active');
-      }
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
