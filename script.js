@@ -79,6 +79,20 @@ window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   setReferralLink();
 });
+function getReferralFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const referrer = params.get('ref');
+  if (referrer) {
+    localStorage.setItem('referrer', referrer);
+    console.log("Referral detected from:", referrer);
+  }
+}
+
+window.addEventListener('load', () => {
+  Telegram.WebApp.ready();
+  setReferralLink();
+  getReferralFromURL();
+});
 
 function rewardReferrer() {
   const alreadyRewarded = localStorage.getItem('refRewarded');
