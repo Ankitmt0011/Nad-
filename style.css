@@ -95,3 +95,22 @@ body {
   border: 1px solid #333;
   color: #fff;
 }
+#tabs {
+  display: flex;
+  justify-content: space-around;
+  background: #222;
+  padding: 10px 0;
+  position: fixed; /* changed from sticky */
+  bottom: 0;
+  width: 100%;
+  z-index: 10;
+  border-top: 1px solid #333;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  padding-bottom: 60px; /* make room for bottom tab bar */
+}
