@@ -78,7 +78,38 @@
   </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js">
+
+    // Get your referral name (can be user's Telegram username or placeholder)
+const refName = 'user123'; // You can make this dynamic later
+const referralLink = `https://nadwallet.vercel.app?ref=${refName}`;
+document.getElementById("refLink").value = referralLink;
+
+// Copy button
+function copyReferralLink() {
+  const input = document.getElementById("refLink");
+  input.select();
+  input.setSelectionRange(0, 99999); 
+  document.execCommand("copy");
+  alert("Referral link copied!");
+}
+
+// Check if visiting with referral link
+const urlParams = new URLSearchParams(window.location.search);
+const refFromUrl = urlParams.get("ref");
+if (refFromUrl && !localStorage.getItem("referredBy")) {
+  localStorage.setItem("referredBy", refFromUrl);
+  let currentReferrals = parseInt(localStorage.getItem("referrals") || 0);
+  localStorage.setItem("referrals", currentReferrals + 1);
+  let earned = parseInt(localStorage.getItem("points") || 0);
+  localStorage.setItem("points", earned + 100);
+  alert("Thanks for joining via referral! You earned 100 ND.");
+}
+
+// Show updated referrals
+document.getElementById("totalReferrals").innerText = localStorage.getItem("referrals") || 0;
+document.getElementById("totalEarned").innerText = localStorage.getItem("points") || 0;
+  </script>
 </body>
 
   <script src="script.js"></script>
