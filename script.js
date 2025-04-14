@@ -79,3 +79,29 @@ window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   setReferralLink();
 });
+
+function rewardReferrer() {
+  const alreadyRewarded = localStorage.getItem('refRewarded');
+  const referrer = localStorage.getItem('referrer');
+
+  if (referrer && !alreadyRewarded) {
+    // Simulate sending reward to referrer (log for now)
+    console.log(`Awarding 100 ND to referrer: ${referrer}`);
+    
+    // Mark referral as rewarded to avoid duplicate
+    localStorage.setItem('refRewarded', 'true');
+
+    // In real case, send this to backend:
+    // fetch('/api/reward-referrer', { method: 'POST', body: JSON.stringify({ referrer }) })
+
+    // Show confirmation (optional)
+    alert(`Thanks for joining! ${referrer} will receive 100 ND.`);
+  }
+}
+
+window.addEventListener('load', () => {
+  Telegram.WebApp.ready();
+  setReferralLink();
+  getReferralFromURL();
+  rewardReferrer();
+});
