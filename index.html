@@ -78,8 +78,10 @@
   </div>
   </div>
 
-  <script src="script.js">
+  <script src="script.js"></script>
+</body>
 
+  <script src="script.js">
     // Get your referral name (can be user's Telegram username or placeholder)
 const refName = 'user123'; // You can make this dynamic later
 const referralLink = `https://nadwallet.vercel.app?ref=${refName}`;
@@ -110,8 +112,5 @@ if (refFromUrl && !localStorage.getItem("referredBy")) {
 document.getElementById("totalReferrals").innerText = localStorage.getItem("referrals") || 0;
 document.getElementById("totalEarned").innerText = localStorage.getItem("points") || 0;
   </script>
-</body>
-
-  <script src="script.js"></script>
 </body>
 </html>
