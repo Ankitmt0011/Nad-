@@ -75,6 +75,20 @@
 </body>
 
   <script src="script.js">
+    window.addEventListener('load', () => {
+  Telegram.WebApp.ready();
+  setReferralLink();
+  getReferralFromURL();
+});
+
+  function getReferralFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const referrer = params.get('ref');
+  if (referrer) {
+    localStorage.setItem('referrer', referrer);
+    console.log("Referral detected from:", referrer);
+  }
+  }
     // Get your referral name (can be user's Telegram username or placeholder)
 const refName = 'user123'; // You can make this dynamic later
 const referralLink = `https://nadwallet.vercel.app?ref=${refName}`;
