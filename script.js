@@ -102,3 +102,4 @@ window.addEventListener('load', () => {
     });
   });
 });
+console.log(window.Telegram.WebApp.initDataUnsafe.user);
