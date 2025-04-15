@@ -1,6 +1,9 @@
 let totalPoints = 0;
 let totalReferrals = 0;
 const completedTasks = {};
+getReferralFromURL()
+rewardReferrer()
+window.addEventListener('load', ...)
 
 function switchTab(tab) {
   document.getElementById("walletSection").classList.add("hidden");
