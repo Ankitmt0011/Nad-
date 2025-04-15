@@ -8,115 +8,69 @@
 </head>
 <body>
 
+  <!-- Wallet Section -->
+  <div id="walletSection" class="section">
+    <div class="center-text">Coming soon...</div>
+  </div>
 
-    <div id="walletSection" class="section">
-      <div class="center-text">Coming soon...</div>
+  <!-- Tasks Section -->
+  <div id="tasksSection" class="section hidden">
+    <h2 class="section-title">Missions</h2>
+    <p class="section-subtitle">Complete tasks and get ND points.</p>
+
+    <div class="score-box">
+      <p><strong>Total ND Earned:</strong> <span id="totalPoints">0</span></p>
+      <p><strong>Total Referrals:</strong> <span id="totalReferrals">0</span></p>
     </div>
 
-    <div id="tasksSection" class="section hidden">
-      <h2 class="section-title">Missions</h2>
-      <p class="section-subtitle">Complete tasks and get ND points.</p>
-
-      <div class="score-box">
-        <p><strong>Total ND Earned:</strong> <span id="totalPoints">0</span></p>
-        <p><strong>Total Referrals:</strong> <span id="totalReferrals">0</span></p>
-      </div>
-
-      <div class="task">
-        
-        <h3>Telegram</h3>
-        <p>Join our Telegram channel and receive a reward.</p>
-        <div class="task-footer">
-          <span>100 ND</span>
-          <button onclick="completeTask('telegram')">Start</button>
-        </div>
-      </div>
-
-      <div class="task">
-        <h3>Twitter Follow</h3>
-        <p>Follow our Twitter profile to get rewarded.</p>
-        <div class="task-footer">
-          <span>100 ND</span>
-          <button onclick="completeTask('twitterFollow')">Start</button>
-        </div>
-      </div>
-
-      <div class="task">
-        <h3>Retweet</h3>
-        <p>Retweet our pinned tweet to earn points.</p>
-        <div class="task-footer">
-          <span>50 ND</span>
-          <button onclick="completeTask('retweet')">Start</button>
-        </div>
-      </div>
-      
-        <div class="task-card">
-  <h3>Invite Friends</h3>
-  <p>Get 100 ND for each friend who joins using your referral link.</p>
-  <div class="referral-section">
-    <input type="text" id="refLink" readonly>
-    <button onclick="copyReferralLink()">Copy</button>
-  </div>
-</div>   
-      <div id="referralBox" class="hidden">
-        <input type="text" value="https://t.me/YourBot?start=ref123" readonly />
-        <p>Share your referral link above.</p>
+    <!-- Telegram Task -->
+    <div class="task">
+      <h3>Telegram</h3>
+      <p>Join our Telegram channel and receive a reward.</p>
+      <div class="task-footer">
+        <span>100 ND</span>
+        <button onclick="completeTask('telegram')">Start</button>
       </div>
     </div>
-  </div>
-   <div id="tabs">
-      <button id="walletTab" class="tab active">Wallet</button>
-      <button id="tasksTab" class="tab">Tasks</button>
+
+    <!-- Twitter Follow Task -->
+    <div class="task">
+      <h3>Twitter Follow</h3>
+      <p>Follow our Twitter profile to get rewarded.</p>
+      <div class="task-footer">
+        <span>100 ND</span>
+        <button onclick="completeTask('twitterFollow')">Start</button>
+      </div>
+    </div>
+
+    <!-- Retweet Task -->
+    <div class="task">
+      <h3>Retweet</h3>
+      <p>Retweet our pinned tweet to earn points.</p>
+      <div class="task-footer">
+        <span>50 ND</span>
+        <button onclick="completeTask('retweet')">Start</button>
+      </div>
+    </div>
+
+    <!-- Referral Task -->
+    <div class="task">
+      <h3>Invite Friends</h3>
+      <p>Get 100 ND for each friend who joins using your referral link.</p>
+      <div class="referral-section">
+        <input type="text" id="refLink" readonly>
+        <button onclick="copyReferralLink()">Copy</button>
+      </div>
     </div>
   </div>
 
+  <!-- Bottom Tabs -->
+  <div id="tabs">
+    <button id="walletTab" class="tab active">Wallet</button>
+    <button id="tasksTab" class="tab">Tasks</button>
+  </div>
+
+  <!-- JS File -->
   <script src="script.js"></script>
-</body>
-
-  <script src="script.js">
-    window.addEventListener('load', () => {
-  Telegram.WebApp.ready();
-  setReferralLink();
-  getReferralFromURL();
-});
-
-  function getReferralFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const referrer = params.get('ref');
-  if (referrer) {
-    localStorage.setItem('referrer', referrer);
-    console.log("Referral detected from:", referrer);
-  }
-  }
-    // Get your referral name (can be user's Telegram username or placeholder)
-const refName = 'user123'; // You can make this dynamic later
-const referralLink = `https://nadwallet.vercel.app?ref=${refName}`;
-document.getElementById("refLink").value = referralLink;
-
-// Copy button
-function copyReferralLink() {
-  const input = document.getElementById("refLink");
-  input.select();
-  input.setSelectionRange(0, 99999); 
-  document.execCommand("copy");
-  alert("Referral link copied!");
-}
-
-// Check if visiting with referral link
-const urlParams = new URLSearchParams(window.location.search);
-const refFromUrl = urlParams.get("ref");
-if (refFromUrl && !localStorage.getItem("referredBy")) {
-  localStorage.setItem("referredBy", refFromUrl);
-  let currentReferrals = parseInt(localStorage.getItem("referrals") || 0);
-  localStorage.setItem("referrals", currentReferrals + 1);
-  let earned = parseInt(localStorage.getItem("points") || 0);
-  localStorage.setItem("points", earned + 100);
-  alert("Thanks for joining via referral! You earned 100 ND.");
-}
-
-// Show updated referrals
-document.getElementById("totalReferrals").innerText = localStorage.getItem("referrals") || 0;
-document.getElementById("totalEarned").innerText = localStorage.getItem("points") || 0;
-  </script>
 </body>
 </html>
