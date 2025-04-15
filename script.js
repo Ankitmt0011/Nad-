@@ -1,7 +1,6 @@
 let totalPoints = parseInt(localStorage.getItem('points')) || 0;
 let totalReferrals = parseInt(localStorage.getItem('referrals')) || 0;
 const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
-console.log(window.Telegram.WebApp.initDataUnsafe.user);
 
 function switchTab(tab) {
   document.getElementById("walletSection").classList.add("hidden");
@@ -103,4 +102,4 @@ window.addEventListener('load', () => {
     });
   });
 });
-
+console.log(window.Telegram.WebApp.initDataUnsafe.user);
