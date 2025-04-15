@@ -102,4 +102,16 @@ window.addEventListener('load', () => {
     });
   });
 });
+function setReferralLink() {
+  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  const username = user?.username || user?.id || '';
+  const refInput = document.getElementById('refLink');
+
+  if (username) {
+    const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
+    refInput.value = refLink;
+  } else {
+    refInput.value = 'Telegram user info not available';
+  }
+}
 console.log(window.Telegram.WebApp.initDataUnsafe.user);
