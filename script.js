@@ -1,6 +1,6 @@
-let totalPoints = 0;
-let totalReferrals = 0;
-const completedTasks = {};
+let totalPoints = parseInt(localStorage.getItem('points')) || 0;
+let totalReferrals = parseInt(localStorage.getItem('referrals')) || 0;
+const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
 
 function switchTab(tab) {
   document.getElementById("walletSection").classList.add("hidden");
@@ -23,7 +23,6 @@ function completeTask(taskId) {
 
   switch (taskId) {
     case "telegram":
-      // add verification logic here later
       points = 100;
       break;
     case "twitterFollow":
@@ -37,6 +36,9 @@ function completeTask(taskId) {
   totalPoints += points;
   completedTasks[taskId] = true;
 
+  localStorage.setItem("points", totalPoints);
+  localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
+
   document.getElementById("totalPoints").innerText = totalPoints;
 
   const buttons = document.querySelectorAll(`button[onclick="completeTask('${taskId}')"]`);
@@ -46,25 +48,11 @@ function completeTask(taskId) {
   });
 }
 
-function showReferral() {
-  totalReferrals += 1;
-  totalPoints += 100;
-
-  document.getElementById("referralBox").classList.remove("hidden");
-  document.getElementById("totalReferrals").innerText = totalReferrals;
-  document.getElementById("totalPoints").innerText = totalPoints;
-}
 function setReferralLink() {
   const user = window.Telegram.WebApp.initDataUnsafe.user;
-  const username = user?.username || '';
+  const username = user?.username || 'user';
   const refInput = document.getElementById('refLink');
-
-  if (username) {
-    const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
-    refInput.value = refLink;
-  } else {
-    refInput.value = 'Telegram username not available';
-  }
+  refInput.value = `https://nadwallet.vercel.app/?ref=${username}`;
 }
 
 function copyReferralLink() {
@@ -74,11 +62,6 @@ function copyReferralLink() {
   alert('Referral link copied!');
 }
 
-// Call it after DOM load
-window.addEventListener('load', () => {
-  Telegram.WebApp.ready();
-  setReferralLink();
-});
 function getReferralFromURL() {
   const params = new URLSearchParams(window.location.search);
   const referrer = params.get('ref');
@@ -88,34 +71,34 @@ function getReferralFromURL() {
   }
 }
 
-window.addEventListener('load', () => {
-  Telegram.WebApp.ready();
-  setReferralLink();
-  getReferralFromURL();
-});
-
 function rewardReferrer() {
   const alreadyRewarded = localStorage.getItem('refRewarded');
   const referrer = localStorage.getItem('referrer');
 
   if (referrer && !alreadyRewarded) {
-    // Simulate sending reward to referrer (log for now)
     console.log(`Awarding 100 ND to referrer: ${referrer}`);
-    
-    // Mark referral as rewarded to avoid duplicate
     localStorage.setItem('refRewarded', 'true');
-
-    // In real case, send this to backend:
-    // fetch('/api/reward-referrer', { method: 'POST', body: JSON.stringify({ referrer }) })
-
-    // Show confirmation (optional)
     alert(`Thanks for joining! ${referrer} will receive 100 ND.`);
   }
 }
 
+// On Load
 window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   setReferralLink();
   getReferralFromURL();
   rewardReferrer();
+
+  // Show stored points and referrals
+  document.getElementById("totalPoints").innerText = totalPoints;
+  document.getElementById("totalReferrals").innerText = totalReferrals;
+
+  // Update task buttons if already completed
+  Object.keys(completedTasks).forEach(taskId => {
+    const buttons = document.querySelectorAll(`button[onclick="completeTask('${taskId}')"]`);
+    buttons.forEach((btn) => {
+      btn.innerText = "Completed";
+      btn.disabled = true;
+    });
+  });
 });
