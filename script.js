@@ -56,7 +56,7 @@ function setReferralLink() {
     const username = user?.username || user?.id || '';
     const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
     refInput.value = refLink;
-    debugText.innerText = `Referral link generated for ${username}`;
+   // debugText.innerText = `Referral link generated for ${username}`;
   } else {
     refInput.value = 'Telegram user info not available';
     debugText.innerText = 'User info not available. Please open via Telegram button.';
