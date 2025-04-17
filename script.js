@@ -116,6 +116,7 @@ function rewardReferrer() {
 // On Page Load
 window.addEventListener('load', () => {
   Telegram.WebApp.ready();
+  registerUser();
   setReferralLink();
   getReferralFromURL();
   rewardReferrer();
