@@ -22,7 +22,9 @@ function completeTask(taskId) {
   let points = 0;
   switch (taskId) {
     case "telegram":
-      points = 100;
+  window.open("https://t.me/nadwalletofficial", "_blank");
+  points = 100;
+  break;
       break;
     case "twitterFollow":
       points = 100;
