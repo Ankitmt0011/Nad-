@@ -49,20 +49,15 @@ function completeTask(taskId) {
 
 function setReferralLink() {
   const user = window.Telegram.WebApp.initDataUnsafe.user;
+  const username = user?.username || user?.id || 'user';
   const refInput = document.getElementById('refLink');
-  const debugText = document.getElementById('debugInfo');
 
-  if (user) {
-    const username = user?.username || user?.id || '';
-    const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
+  if (username) {
+    const refLink = `https://t.me/nadwalletbot?start=${username}`;
     refInput.value = refLink;
-   // debugText.innerText = `Referral link generated for ${username}`;
   } else {
     refInput.value = 'Telegram user info not available';
-    debugText.innerText = 'User info not available. Please open via Telegram button.';
   }
-
-  console.log("User info:", user);
 }
 
 function copyReferralLink() {
