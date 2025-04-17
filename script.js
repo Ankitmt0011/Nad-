@@ -63,8 +63,31 @@ function setReferralLink() {
 function copyReferralLink() {
   const refInput = document.getElementById('refLink');
   refInput.select();
-  document.execCommand('copy');
-  alert('Referral link copied!');
+  refInput.setSelectionRange(0, 99999); // For mobile
+
+  navigator.clipboard.writeText(refInput.value).then(() => {
+    showToast("Referral link copied!");
+  });
+}
+
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.background = '#333';
+  toast.style.color = '#fff';
+  toast.style.padding = '10px 20px';
+  toast.style.borderRadius = '20px';
+  toast.style.zIndex = '1000';
+  toast.style.fontSize = '14px';
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2000);
 }
 
 function getReferralFromURL() {
