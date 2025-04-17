@@ -131,3 +131,24 @@ window.addEventListener('load', () => {
     });
   });
 });
+
+async function registerUser() {
+  const user = Telegram.WebApp.initDataUnsafe.user;
+
+  if (!user) return;
+
+  const response = await fetch('https://your-backend-url.onrender.com/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: user.id,
+      username: user.username,
+      first_name: user.first_name
+    })
+  });
+
+  const data = await response.json();
+  console.log("Register response:", data);
+}
