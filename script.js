@@ -25,13 +25,14 @@ function completeTask(taskId) {
   window.open("https://t.me/nadwalletofficial", "_blank");
   points = 100;
   break;
-      break;
     case "twitterFollow":
-      points = 100;
-      break;
-    case "retweet":
-      points = 50;
-      break;
+  window.open("https://twitter.com/your_profile", "_blank");
+  points = 100;
+  break;
+      case "retweet":
+  window.open("https://twitter.com/your_profile/status/your_tweet_id", "_blank");
+  points = 50;
+  break;
   }
 
   totalPoints += points;
