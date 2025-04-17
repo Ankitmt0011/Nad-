@@ -20,7 +20,6 @@ function completeTask(taskId) {
   if (completedTasks[taskId]) return;
 
   let points = 0;
-
   switch (taskId) {
     case "telegram":
       points = 100;
@@ -50,9 +49,20 @@ function completeTask(taskId) {
 
 function setReferralLink() {
   const user = window.Telegram.WebApp.initDataUnsafe.user;
-  const username = user?.username || 'user';
   const refInput = document.getElementById('refLink');
-  refInput.value = `https://nadwallet.vercel.app/?ref=${username}`;
+  const debugText = document.getElementById('debugInfo');
+
+  if (user) {
+    const username = user?.username || user?.id || '';
+    const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
+    refInput.value = refLink;
+    debugText.innerText = `Referral link generated for ${username}`;
+  } else {
+    refInput.value = 'Telegram user info not available';
+    debugText.innerText = 'User info not available. Please open via Telegram button.';
+  }
+
+  console.log("User info:", user);
 }
 
 function copyReferralLink() {
@@ -82,18 +92,16 @@ function rewardReferrer() {
   }
 }
 
-// On Load
+// On Page Load
 window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   setReferralLink();
   getReferralFromURL();
   rewardReferrer();
 
-  // Show stored points and referrals
   document.getElementById("totalPoints").innerText = totalPoints;
   document.getElementById("totalReferrals").innerText = totalReferrals;
 
-  // Update task buttons if already completed
   Object.keys(completedTasks).forEach(taskId => {
     const buttons = document.querySelectorAll(`button[onclick="completeTask('${taskId}')"]`);
     buttons.forEach((btn) => {
@@ -102,16 +110,3 @@ window.addEventListener('load', () => {
     });
   });
 });
-function setReferralLink() {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
-  const username = user?.username || user?.id || '';
-  const refInput = document.getElementById('refLink');
-
-  if (username) {
-    const refLink = `https://nadwallet.vercel.app/?ref=${username}`;
-    refInput.value = refLink;
-  } else {
-    refInput.value = 'Telegram user info not available';
-  }
-}
-console.log(window.Telegram.WebApp.initDataUnsafe.user);
