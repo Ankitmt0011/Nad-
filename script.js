@@ -156,7 +156,7 @@ async function registerUser() {
 }
 document.getElementById("joinTelegram").addEventListener("click", () => {
   // Step 1: Open Telegram channel
-  window.open("https://t.me/your_channel", "_blank");
+  window.open("https://t.me/nadwalletofficial", "_blank");
 
   // Step 2: Show Verify button
   document.getElementById("verifyTelegram").style.display = "inline-block";
