@@ -44,3 +44,43 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+app.post('/verify-telegram-join', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    // Lookup user's Telegram ID in DB
+    const user = await db.collection('users').findOne({ id });
+    if (!user) return res.status(404).json({ success: false });
+
+    const TELEGRAM_BOT_TOKEN = '7311910547:AAGBWubwo5GZGtcePUgmuvSaBnFVLlBzfd4';
+    const CHANNEL_USERNAME = '@nadwalletofficial';
+
+    const result = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
+      params: {
+        chat_id: CHANNEL_USERNAME,
+        user_id: id
+      }
+    });
+
+    const status = result.data.result.status;
+    const isMember = ['member', 'administrator', 'creator'].includes(status);
+
+    if (isMember) {
+      // Update user record
+      await db.collection('users').updateOne(
+        { id },
+        {
+          $set: { "completedTasks.telegram": true },
+          $inc: { points: 100 }
+        }
+      );
+
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
+  } catch (err) {
+    console.error("Telegram verification error:", err.message);
+    res.status(500).json({ success: false });
+  }
+});
