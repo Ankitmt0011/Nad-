@@ -6,9 +6,10 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-mongoose.connect(process.env.mongodb+srv://rvmohit01:<db_password>@cluster1.oxv9p2d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1)
+// Use the MongoDB URI from the .env file
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error(err));
+  .catch(err => console.error("MongoDB connection error:", err));
 
 // Mongoose User model
 const userSchema = new mongoose.Schema({
@@ -58,10 +59,10 @@ app.post('/verify-telegram-join', async (req, res) => {
     const user = await User.findOne({ id });
     if (!user) return res.status(404).json({ success: false });
 
-    const TELEGRAM_BOT_TOKEN = process.env.7311910547:AAGBWubwo5GZGtcePUgmuvSaBnFVLlBzfd4;
+    const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN;
     const CHANNEL_USERNAME = '@nadwalletofficial';
 
-    const result = await axios.get(`https://api.telegram.org/bot${7311910547:AAGBWubwo5GZGtcePUgmuvSaBnFVLlBzfd4}/getChatMember`, {
+    const result = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
       params: {
         chat_id: CHANNEL_USERNAME,
         user_id: id
