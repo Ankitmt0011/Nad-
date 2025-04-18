@@ -154,3 +154,39 @@ async function registerUser() {
   const data = await response.json();
   console.log("Register response:", data);
 }
+document.getElementById("joinTelegram").addEventListener("click", () => {
+  // Step 1: Open Telegram channel
+  window.open("https://t.me/your_channel", "_blank");
+
+  // Step 2: Show Verify button
+  document.getElementById("verifyTelegram").style.display = "inline-block";
+});
+
+document.getElementById("verifyTelegram").addEventListener("click", async () => {
+  try {
+    const userId = localStorage.getItem("userId"); // or wherever you're storing it
+
+    const res = await fetch('https://your-backend-api/verify-telegram-join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: userId }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Verified and reward granted!");
+      // Update UI: hide buttons, mark task as completed
+      document.getElementById("joinTelegram").style.display = "none";
+      document.getElementById("verifyTelegram").style.display = "none";
+      // Optional: update points shown
+    } else {
+      alert("You have not joined the channel yet.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Verification failed.");
+  }
+});
