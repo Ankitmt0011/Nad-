@@ -1,20 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
+const cors = require('cors');
 require('dotenv').config();
 
-const cors = require('cors');
-app.use(cors());
-
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-// Use the MongoDB URI from the .env file
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("MongoDB connection error:", err));
+// Connect to MongoDB using environment variable
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("✅ MongoDB connected"))
+.catch(err => console.error("❌ MongoDB error:", err));
 
-// Mongoose User model
+// User schema
 const userSchema = new mongoose.Schema({
   id: Number,
   username: String,
@@ -27,52 +29,48 @@ const userSchema = new mongoose.Schema({
     retweet: { type: Boolean, default: false }
   }
 });
+
 const User = mongoose.model('User', userSchema);
 
-// Test route
+// Default route
 app.get("/", (req, res) => {
-  res.send("Nad Wallet Backend is running!");
+  res.send("✅ Nad Wallet backend is running!");
 });
 
-// Register route
+// Register a new user
 app.post('/register', async (req, res) => {
   const { id, username, first_name } = req.body;
-
   try {
-    const user = await User.findOne({ id });
+    let user = await User.findOne({ id });
     if (!user) {
-      await User.create({
-        id,
-        username,
-        first_name
-      });
+      user = await User.create({ id, username, first_name });
     }
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// Verify Telegram Join
+// Verify Telegram channel membership
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
 
   try {
     const user = await User.findOne({ id });
-    if (!user) return res.status(404).json({ success: false });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN;
     const CHANNEL_USERNAME = '@nadwalletofficial';
 
-    const result = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
+    const response = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
       params: {
         chat_id: CHANNEL_USERNAME,
         user_id: id
       }
     });
 
-    const status = result.data.result.status;
+    const status = response.data?.result?.status;
     const isMember = ['member', 'administrator', 'creator'].includes(status);
 
     if (isMember) {
@@ -83,17 +81,18 @@ app.post('/verify-telegram-join', async (req, res) => {
           $inc: { points: 100 }
         }
       );
-      res.json({ success: true });
-    } else {
-      res.json({ success: false });
+      return res.json({ success: true });
     }
+
+    res.json({ success: false, message: "Not a member yet" });
+
   } catch (err) {
-    console.error("Telegram verification error:", err.message);
-    res.status(500).json({ success: false });
+    console.error("Verification error:", err.response?.data || err.message);
+    res.status(500).json({ success: false, message: "Verification failed" });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
