@@ -139,7 +139,7 @@ async function registerUser() {
 
   if (!user) return;
 
-  const response = await fetch('https://your-backend-url.onrender.com/register', {
+  const response = await fetch('https://nad-wallet.onrender.com/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
