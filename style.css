@@ -1,31 +1,13 @@
+/* Base Styles */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #111;
   color: #fff;
+  padding-bottom: 60px; /* Room for bottom tab bar */
 }
 
-#tabs {
-  display: flex;
-  justify-content: space-around;
-  background: #222;
-  padding: 10px 0;
-  position: sticky;
-  bottom: 0;
-}
-
-.tab {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 16px;
-}
-
-.tab.active {
-  color: skyblue;
-  font-weight: bold;
-}
-
+/* Section Layouts */
 .section {
   padding: 20px;
 }
@@ -41,6 +23,7 @@ body {
   margin-top: 100px;
 }
 
+/* Titles */
 .section-title {
   font-size: 24px;
   color: skyblue;
@@ -53,6 +36,7 @@ body {
   margin-bottom: 20px;
 }
 
+/* Score Box */
 .score-box {
   background: #222;
   padding: 15px;
@@ -60,6 +44,7 @@ body {
   margin-bottom: 20px;
 }
 
+/* Task Cards */
 .task {
   background: #1c1c1c;
   padding: 15px;
@@ -67,6 +52,7 @@ body {
   border-radius: 10px;
 }
 
+/* Task Footer */
 .task-footer {
   display: flex;
   justify-content: space-between;
@@ -74,7 +60,8 @@ body {
   margin-top: 10px;
 }
 
-.task-footer button {
+/* Buttons */
+button {
   background: skyblue;
   color: #000;
   padding: 5px 15px;
@@ -84,33 +71,49 @@ body {
   cursor: pointer;
 }
 
-#referralBox {
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Referral Section */
+.referral-section {
+  display: flex;
+  gap: 10px;
   margin-top: 10px;
 }
 
-#referralBox input {
-  width: 100%;
+.referral-section input {
+  flex: 1;
   padding: 10px;
   background: #222;
   border: 1px solid #333;
   color: #fff;
+  border-radius: 5px;
 }
+
+/* Tabs */
 #tabs {
   display: flex;
   justify-content: space-around;
   background: #222;
   padding: 10px 0;
-  position: fixed; /* changed from sticky */
+  position: fixed;
   bottom: 0;
   width: 100%;
   z-index: 10;
   border-top: 1px solid #333;
 }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
+.tab {
+  background: none;
+  border: none;
   color: #fff;
-  padding-bottom: 60px; /* make room for bottom tab bar */
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: skyblue;
+  font-weight: bold;
 }
