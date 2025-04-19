@@ -1,97 +1,88 @@
 let totalPoints = parseInt(localStorage.getItem('points')) || 0;
 let totalReferrals = parseInt(localStorage.getItem('referrals')) || 0;
-const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
+let completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
 
 function switchTab(tab) {
-  document.getElementById("walletSection").classList.add("hidden");
-  document.getElementById("tasksSection").classList.add("hidden");
+  ["wallet", "tasks"].forEach(t => {
+    document.getElementById(`${t}Section`).classList.add("hidden");
+    document.getElementById(`${t}Tab`).classList.remove("active");
+  });
 
-  document.getElementById("walletTab").classList.remove("active");
-  document.getElementById("tasksTab").classList.remove("active");
-
-  document.getElementById(tab + "Section").classList.remove("hidden");
-  document.getElementById(tab + "Tab").classList.add("active");
+  document.getElementById(`${tab}Section`).classList.remove("hidden");
+  document.getElementById(`${tab}Tab`).classList.add("active");
 }
 
 document.getElementById("walletTab").onclick = () => switchTab("wallet");
 document.getElementById("tasksTab").onclick = () => switchTab("tasks");
 
-function completeTask(taskId) {
-  if (completedTasks[taskId]) return;
+function updatePointsDisplay() {
+  document.getElementById("totalPoints").innerText = totalPoints;
+  document.getElementById("totalReferrals").innerText = totalReferrals;
+}
 
-  let points = 0;
-  switch (taskId) {
-
-      case "telegram":
-  window.open("https://t.me/nadwalletofficial", "_blank");
-  points = 100;
-  break;
-    case "twitterFollow":
-  window.open("https://twitter.com/your_profile", "_blank");
-  points = 100;
-  break;
-      case "retweet":
-  window.open("https://twitter.com/your_profile/status/your_tweet_id", "_blank");
-  points = 50;
-  break;
-  }
-
-  totalPoints += points;
+function setTaskCompleted(taskId, points) {
   completedTasks[taskId] = true;
+  totalPoints += points;
 
   localStorage.setItem("points", totalPoints);
   localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
 
-  document.getElementById("totalPoints").innerText = totalPoints;
-
-  const buttons = document.querySelectorAll(`button[onclick="completeTask('${taskId}')"]`);
-  buttons.forEach((btn) => {
+  const buttons = document.querySelectorAll(`button[data-task="${taskId}"]`);
+  buttons.forEach(btn => {
     btn.innerText = "Completed";
     btn.disabled = true;
   });
+
+  updatePointsDisplay();
+}
+
+function handleTaskClick(taskId) {
+  const taskMap = {
+    telegram: {
+      url: "https://t.me/nadwalletofficial",
+      points: 100
+    },
+    twitterFollow: {
+      url: "https://twitter.com/your_profile",
+      points: 100
+    },
+    retweet: {
+      url: "https://twitter.com/your_profile/status/your_tweet_id",
+      points: 50
+    }
+  };
+
+  const task = taskMap[taskId];
+  if (!task || completedTasks[taskId]) return;
+
+  window.open(task.url, "_blank");
+  setTaskCompleted(taskId, task.points);
 }
 
 function setReferralLink() {
   const user = window.Telegram.WebApp.initDataUnsafe.user;
-  const username = user?.username || user?.id || 'user';
-  const refInput = document.getElementById('refLink');
-
-  if (username) {
-    const refLink = `https://t.me/nadwalletbot?start=${username}`;
-    refInput.value = refLink;
-  } else {
-    refInput.value = 'Telegram user info not available';
-  }
+  const username = user?.username || user?.id;
+  const refLink = `https://t.me/nadwalletbot?start=${username}`;
+  document.getElementById('refLink').value = refLink;
 }
 
 function copyReferralLink() {
   const refInput = document.getElementById('refLink');
   refInput.select();
-  refInput.setSelectionRange(0, 99999); // For mobile
-
-  navigator.clipboard.writeText(refInput.value).then(() => {
-    showToast("Referral link copied!");
-  });
+  refInput.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(refInput.value).then(() => showToast("Referral link copied!"));
 }
 
 function showToast(message) {
   const toast = document.createElement('div');
   toast.textContent = message;
-  toast.style.position = 'fixed';
-  toast.style.bottom = '20px';
-  toast.style.left = '50%';
-  toast.style.transform = 'translateX(-50%)';
-  toast.style.background = '#333';
-  toast.style.color = '#fff';
-  toast.style.padding = '10px 20px';
-  toast.style.borderRadius = '20px';
-  toast.style.zIndex = '1000';
-  toast.style.fontSize = '14px';
+  Object.assign(toast.style, {
+    position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+    background: '#333', color: '#fff', padding: '10px 20px',
+    borderRadius: '20px', zIndex: '1000', fontSize: '14px'
+  });
   document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 2000);
+  setTimeout(() => toast.remove(), 2000);
 }
 
 function getReferralFromURL() {
@@ -108,42 +99,18 @@ function rewardReferrer() {
   const referrer = localStorage.getItem('referrer');
 
   if (referrer && !alreadyRewarded) {
-    console.log(`Awarding 100 ND to referrer: ${referrer}`);
     localStorage.setItem('refRewarded', 'true');
     alert(`Thanks for joining! ${referrer} will receive 100 ND.`);
   }
 }
 
-// On Page Load
-window.addEventListener('load', () => {
-  Telegram.WebApp.ready();
-  registerUser();
-  setReferralLink();
-  getReferralFromURL();
-  rewardReferrer();
-
-  document.getElementById("totalPoints").innerText = totalPoints;
-  document.getElementById("totalReferrals").innerText = totalReferrals;
-
-  Object.keys(completedTasks).forEach(taskId => {
-    const buttons = document.querySelectorAll(`button[onclick="completeTask('${taskId}')"]`);
-    buttons.forEach((btn) => {
-      btn.innerText = "Completed";
-      btn.disabled = true;
-    });
-  });
-});
-
 async function registerUser() {
   const user = Telegram.WebApp.initDataUnsafe.user;
-
   if (!user) return;
 
-  const response = await fetch('https://nad-wallet.onrender.com/register', {
+  const res = await fetch('https://nad-wallet.onrender.com/register', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: user.id,
       username: user.username,
@@ -151,42 +118,63 @@ async function registerUser() {
     })
   });
 
-  const data = await response.json();
+  const data = await res.json();
+  if (data.success) {
+    localStorage.setItem("userId", user.id); // CRITICAL: required for Telegram verification
+  }
+
   console.log("Register response:", data);
 }
-document.getElementById("joinTelegram").addEventListener("click", () => {
-  // Step 1: Open Telegram channel
-  window.open("https://t.me/nadwalletofficial", "_blank");
 
-  // Step 2: Show Verify button
-  document.getElementById("verifyTelegram").style.display = "inline-block";
-});
+async function verifyTelegramJoin() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) return alert("User ID not found.");
 
-document.getElementById("verifyTelegram").addEventListener("click", async () => {
   try {
-    const userId = localStorage.getItem("userId"); // or wherever you're storing it
-
     const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: userId }),
     });
 
     const data = await res.json();
-
     if (data.success) {
-      alert("Verified and reward granted!");
-      // Update UI: hide buttons, mark task as completed
+      showToast("Telegram verified. +100 ND awarded.");
+      setTaskCompleted("telegram", 100);
       document.getElementById("joinTelegram").style.display = "none";
       document.getElementById("verifyTelegram").style.display = "none";
-      // Optional: update points shown
     } else {
-      alert("You have not joined the channel yet.");
+      alert("You haven't joined the channel yet.");
     }
   } catch (err) {
     console.error(err);
     alert("Verification failed.");
   }
+}
+
+// On Load
+window.addEventListener('load', () => {
+  Telegram.WebApp.ready();
+  registerUser();
+  setReferralLink();
+  getReferralFromURL();
+  rewardReferrer();
+  updatePointsDisplay();
+
+  // Set completed task buttons
+  Object.keys(completedTasks).forEach(taskId => {
+    const buttons = document.querySelectorAll(`button[data-task="${taskId}"]`);
+    buttons.forEach(btn => {
+      btn.innerText = "Completed";
+      btn.disabled = true;
+    });
+  });
 });
+
+// Telegram task buttons
+document.getElementById("joinTelegram").addEventListener("click", () => {
+  window.open("https://t.me/nadwalletofficial", "_blank");
+  document.getElementById("verifyTelegram").style.display = "inline-block";
+});
+
+document.getElementById("verifyTelegram").addEventListener("click", verifyTelegramJoin);
