@@ -166,7 +166,7 @@ document.getElementById("verifyTelegram").addEventListener("click", async () => 
   try {
     const userId = localStorage.getItem("userId"); // or wherever you're storing it
 
-    const res = await fetch('https://your-backend-api/verify-telegram-join', {
+    const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
