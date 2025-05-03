@@ -178,3 +178,12 @@ document.getElementById("joinTelegram").addEventListener("click", () => {
 });
 
 document.getElementById("verifyTelegram").addEventListener("click", verifyTelegramJoin);
+
+const API_BASE_URL = 'https://nad-wallet.onrender.com';
+
+// Example usage:
+fetch(`${API_BASE_URL}/register`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ id, username, first_name })
+});
