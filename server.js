@@ -11,9 +11,9 @@ app.use(express.json());
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB error:", err));
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// User schema
+// User Schema
 const userSchema = new mongoose.Schema({
   id: Number,
   username: String,
@@ -26,15 +26,14 @@ const userSchema = new mongoose.Schema({
     retweet: { type: Boolean, default: false }
   }
 });
-
 const User = mongoose.model('User', userSchema);
 
-// Default route
-app.get("/", (req, res) => {
+// Root route
+app.get('/', (req, res) => {
   res.send("✅ Nad Wallet backend is running!");
 });
 
-// Register a new user
+// Register user
 app.post('/register', async (req, res) => {
   const { id, username, first_name } = req.body;
   try {
@@ -44,12 +43,12 @@ app.post('/register', async (req, res) => {
     }
     res.json({ success: true, user });
   } catch (err) {
-    console.error("Register error:", err);
+    console.error("❌ Register error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// Verify Telegram channel membership
+// Verify Telegram join
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
 
@@ -60,7 +59,7 @@ app.post('/verify-telegram-join', async (req, res) => {
     }
 
     const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN;
-    const CHANNEL_ID = '-1002462860928'; // Correct channel ID
+    const CHANNEL_ID = '-1002462860928'; // Use channel ID or @username
 
     const response = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
       params: {
@@ -68,6 +67,8 @@ app.post('/verify-telegram-join', async (req, res) => {
         user_id: id
       }
     });
+
+    console.log("Telegram API response:", response.data); // Debug log
 
     const status = response.data?.result?.status;
     const isMember = ['member', 'administrator', 'creator'].includes(status);
@@ -86,11 +87,12 @@ app.post('/verify-telegram-join', async (req, res) => {
     res.json({ success: false, message: "Not a member yet" });
 
   } catch (err) {
-    console.error("Verification error:", err.response?.data || err.message);
+    console.error("❌ Verification error:", err.response?.data || err.message);
     res.status(500).json({ success: false, message: "Verification failed" });
   }
 });
 
+// Server listen
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
