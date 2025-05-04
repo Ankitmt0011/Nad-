@@ -8,12 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB error:", err));
 
-// Mongoose User model
+// User schema
 const userSchema = new mongoose.Schema({
   id: Number,
   username: String,
@@ -28,30 +28,28 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Webhook route for Telegram bot
+// Telegram webhook route
 app.post(`/webhook/${process.env.BOT_TOKEN}`, async (req, res) => {
   const message = req.body.message;
-
   if (!message || !message.from) return res.sendStatus(200);
 
   const { id, username, first_name } = message.from;
   const chat_id = message.chat.id;
   const text = message.text || "";
 
-  // Auto-register user
   let user = await User.findOne({ id });
   if (!user) {
     user = await User.create({ id, username, first_name });
   }
 
-  if (text.startsWith("/start")) {
+  if (text === "/start") {
     await sendMessage(chat_id, "Welcome to Nad Wallet! You can now complete tasks and earn ND points.");
   }
 
   res.sendStatus(200);
 });
 
-// Telegram verification endpoint
+// Verify Telegram channel join
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
 
@@ -93,58 +91,26 @@ app.get("/", (req, res) => {
   res.send("✅ Nad Wallet backend is running with Telegram Bot!");
 });
 
-// Helper to send message via Telegram Bot API
+// Helper: send message via Telegram
 async function sendMessage(chatId, text) {
   await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
     chat_id: chatId,
-    text: text
+    text
   });
 }
 
-// Start server
+// Start server and set webhook
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  const setWebhook = async () => {
+
   const webhookUrl = `https://${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.BOT_TOKEN}`;
   try {
     const res = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook`, {
       params: { url: webhookUrl }
     });
-    console.log("✅ Webhook set:", res.data);
+    console.log("✅ Telegram webhook set:", res.data);
   } catch (err) {
     console.error("❌ Failed to set webhook:", err.response?.data || err.message);
   }
-};
-setWebhook();
-
-  // Set Telegram webhook
-  const webhookUrl = `https://${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.BOT_TOKEN}`;
-  try {
-    await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
-    console.log("✅ Telegram webhook set");
-  } catch (err) {
-    console.error("❌ Failed to set webhook:", err.response?.data || err.message);
-  }
-});
-// Telegram Webhook handler
-app.post(`/webhook/${process.env.BOT_TOKEN}`, async (req, res) => {
-  const message = req.body.message;
-
-  if (!message) {
-    return res.sendStatus(200);
-  }
-
-  const chatId = message.chat.id;
-  const text = message.text || "";
-
-  // Example response
-  if (text === "/start") {
-    await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-      chat_id: chatId,
-      text: "Welcome to Nad Wallet bot!"
-    });
-  }
-
-  res.sendStatus(200);
 });
