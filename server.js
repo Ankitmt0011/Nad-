@@ -8,12 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB using environment variable
-mongoose.connect(process.env.MONGO_URI);
-
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB error:", err));
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => console.error("❌ MongoDB error:", err));
 
 // User schema
 const userSchema = new mongoose.Schema({
@@ -57,13 +55,16 @@ app.post('/verify-telegram-join', async (req, res) => {
 
   try {
     const user = await User.findOne({ id });
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN;
-    const CHANNEL_USERNAME = '-1002462860928';
+    const CHANNEL_ID = '-1002462860928'; // Correct channel ID
+
     const response = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
       params: {
-        chat_id: CHANNEL_USERNAME,
+        chat_id: CHANNEL_ID,
         user_id: id
       }
     });
