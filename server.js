@@ -8,12 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+  .catch(err => console.error("❌ MongoDB error:", err));
 
-// User Schema
+// Mongoose User model
 const userSchema = new mongoose.Schema({
   id: Number,
   username: String,
@@ -28,47 +28,43 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Root route
-app.get('/', (req, res) => {
-  res.send("✅ Nad Wallet backend is running!");
-});
+// Webhook route for Telegram bot
+app.post(`/webhook/${process.env.BOT_TOKEN}`, async (req, res) => {
+  const message = req.body.message;
 
-// Register user
-app.post('/register', async (req, res) => {
-  const { id, username, first_name } = req.body;
-  try {
-    let user = await User.findOne({ id });
-    if (!user) {
-      user = await User.create({ id, username, first_name });
-    }
-    res.json({ success: true, user });
-  } catch (err) {
-    console.error("❌ Register error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+  if (!message || !message.from) return res.sendStatus(200);
+
+  const { id, username, first_name } = message.from;
+  const chat_id = message.chat.id;
+  const text = message.text || "";
+
+  // Auto-register user
+  let user = await User.findOne({ id });
+  if (!user) {
+    user = await User.create({ id, username, first_name });
   }
+
+  if (text.startsWith("/start")) {
+    await sendMessage(chat_id, "Welcome to Nad Wallet! You can now complete tasks and earn ND points.");
+  }
+
+  res.sendStatus(200);
 });
 
-// Verify Telegram join
+// Telegram verification endpoint
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
 
   try {
     const user = await User.findOne({ id });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    const CHANNEL_ID = '-1002462860928'; // Use channel ID or @username
-
-    const response = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
+    const response = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getChatMember`, {
       params: {
-        chat_id: CHANNEL_ID,
+        chat_id: process.env.CHANNEL_ID,
         user_id: id
       }
     });
-
-    console.log("Telegram API response:", response.data); // Debug log
 
     const status = response.data?.result?.status;
     const isMember = ['member', 'administrator', 'creator'].includes(status);
@@ -87,13 +83,35 @@ app.post('/verify-telegram-join', async (req, res) => {
     res.json({ success: false, message: "Not a member yet" });
 
   } catch (err) {
-    console.error("❌ Verification error:", err.response?.data || err.message);
+    console.error("Verification error:", err.response?.data || err.message);
     res.status(500).json({ success: false, message: "Verification failed" });
   }
 });
 
-// Server listen
+// Default route
+app.get("/", (req, res) => {
+  res.send("✅ Nad Wallet backend is running with Telegram Bot!");
+});
+
+// Helper to send message via Telegram Bot API
+async function sendMessage(chatId, text) {
+  await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+    chat_id: chatId,
+    text: text
+  });
+}
+
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
+
+  // Set Telegram webhook
+  const webhookUrl = `https://${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.BOT_TOKEN}`;
+  try {
+    await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
+    console.log("✅ Telegram webhook set");
+  } catch (err) {
+    console.error("❌ Failed to set webhook:", err.response?.data || err.message);
+  }
 });
