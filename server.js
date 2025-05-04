@@ -1,3 +1,4 @@
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL || 'nad-wallet.onrender.com';
 const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
@@ -49,6 +50,22 @@ app.post(`/webhook/${process.env.BOT_TOKEN}`, async (req, res) => {
   }
 
   res.sendStatus(200);
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, async () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+
+  // Set Telegram webhook
+  const webhookUrl = `https://${RENDER_EXTERNAL_URL}/webhook/${process.env.TELEGRAM_BOT_TOKEN}`;
+  try {
+    const res = await axios.get(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
+      params: { url: webhookUrl }
+    });
+    console.log("✅ Webhook set:", res.data);
+  } catch (err) {
+    console.error("❌ Failed to set webhook:", err.response?.data || err.message);
+  }
 });
 
 // Task verification: Telegram join
