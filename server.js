@@ -28,28 +28,30 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Telegram webhook route
+// Telegram webhook handler
 app.post(`/webhook/${process.env.BOT_TOKEN}`, async (req, res) => {
   const message = req.body.message;
+
   if (!message || !message.from) return res.sendStatus(200);
 
   const { id, username, first_name } = message.from;
   const chat_id = message.chat.id;
   const text = message.text || "";
 
+  // Auto-register user
   let user = await User.findOne({ id });
   if (!user) {
     user = await User.create({ id, username, first_name });
   }
 
-  if (text === "/start") {
+  if (text.startsWith("/start")) {
     await sendMessage(chat_id, "Welcome to Nad Wallet! You can now complete tasks and earn ND points.");
   }
 
   res.sendStatus(200);
 });
 
-// Verify Telegram channel join
+// Task verification: Telegram join
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
 
@@ -86,31 +88,39 @@ app.post('/verify-telegram-join', async (req, res) => {
   }
 });
 
-// Default route
+// Root route
 app.get("/", (req, res) => {
   res.send("✅ Nad Wallet backend is running with Telegram Bot!");
 });
 
-// Helper: send message via Telegram
+// Helper function to send message
 async function sendMessage(chatId, text) {
-  await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-    chat_id: chatId,
-    text
-  });
+  try {
+    await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+      chat_id: chatId,
+      text: text
+    });
+  } catch (err) {
+    console.error("Send message error:", err.response?.data || err.message);
+  }
 }
 
-// Start server and set webhook
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-
+// Set webhook on server start
+const setWebhook = async () => {
   const webhookUrl = `https://${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.BOT_TOKEN}`;
   try {
     const res = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook`, {
       params: { url: webhookUrl }
     });
-    console.log("✅ Telegram webhook set:", res.data);
+    console.log("✅ Webhook set:", res.data);
   } catch (err) {
     console.error("❌ Failed to set webhook:", err.response?.data || err.message);
   }
+};
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  setWebhook(); // Set Telegram webhook on start
 });
