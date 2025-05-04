@@ -58,7 +58,7 @@ app.post('/verify-telegram-join', async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN;
+    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHANNEL_ID = '-1002462860928'; // Use channel ID or @username
 
     const response = await axios.get(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`, {
