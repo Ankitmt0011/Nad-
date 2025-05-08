@@ -43,9 +43,24 @@ app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN}`, async (req, res) => {
     user = await User.create({ id, username, first_name });
   }
 
-  if (text.startsWith("/start")) {
-    await sendMessage(chatId, "Welcome to Nad Wallet! You can now complete tasks and earn ND points.");
-  }
+if (text.startsWith("/start")) {
+  await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    chat_id: chatId,
+    text: "Welcome to Nad Wallet! You can now complete tasks and earn ND points.",
+    reply_markup: {
+      keyboard: [
+        [{
+          text: "Open Wallet",
+          web_app: {
+            url: "https://nadwallet.vercel.app"  // Replace this with your actual frontend URL
+          }
+        }]
+      ],
+      resize_keyboard: true,
+      one_time_keyboard: true
+    }
+  });
+}
 
   res.sendStatus(200);
 });
