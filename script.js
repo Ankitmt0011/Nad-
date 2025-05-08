@@ -206,3 +206,12 @@ async function fetchUserData(userId) {
     // Add checks for other tasks too (e.g., twitterFollow, retweet)
   }
 }
+
+function markTaskAsCompleted(taskName) {
+  const button = document.querySelector(`#${taskName}-button`);
+  if (button) {
+    button.innerText = "Completed";
+    button.disabled = true;
+    button.classList.add('completed'); // Optional for styling
+  }
+}
