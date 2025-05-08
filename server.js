@@ -59,6 +59,9 @@ if (text.startsWith("/start")) {
     }
   });
 }
+  res.sendStatus(200); // <-- this line was missing
+});
+
 // Verify Telegram join task
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
