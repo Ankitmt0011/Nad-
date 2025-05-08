@@ -46,25 +46,19 @@ app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN}`, async (req, res) => {
 if (text.startsWith("/start")) {
   await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     chat_id: chatId,
-    text: "Welcome to Nad Wallet! You can now complete tasks and earn ND points.",
+    text: "Welcome! Tap below to open your wallet:",
     reply_markup: {
-      keyboard: [
-        [{
-          text: "Open Wallet",
-          web_app: {
-            url: "https://nadwallet.vercel.app"  // Replace this with your actual frontend URL
+      inline_keyboard: [
+        [
+          {
+            text: "Open Wallet",
+            web_app: { url: "https://nadwallet.vercel.app/" }
           }
-        }]
-      ],
-      resize_keyboard: true,
-      one_time_keyboard: true
+        ]
+      ]
     }
   });
 }
-
-  res.sendStatus(200);
-});
-
 // Verify Telegram join task
 app.post('/verify-telegram-join', async (req, res) => {
   const { id } = req.body;
