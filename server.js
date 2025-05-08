@@ -131,3 +131,24 @@ app.listen(PORT, async () => {
     console.error("❌ Webhook setup failed:", err.response?.data || err.message);
   }
 });
+
+app.post('/user-data', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    const user = await User.findOne({ id });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.json({
+      success: true,
+      data: {
+        points: user.points,
+        completedTasks: user.completedTasks
+      }
+    });
+  } catch (err) {
+    console.error("Fetch user data error:", err.message);
+    res.status(500).json({ success: false });
+  }
+});
+
