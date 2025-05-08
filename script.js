@@ -187,3 +187,22 @@ fetch(`${API_BASE_URL}/register`, {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ id, username, first_name })
 });
+
+async function fetchUserData(userId) {
+  const res = await fetch('https://nad-wallet.onrender.com/user-data', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: userId })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    const completed = data.data.completedTasks;
+
+    if (completed.telegram) {
+      markTaskAsCompleted('telegram'); // This function should update UI
+    }
+
+    // Add checks for other tasks too (e.g., twitterFollow, retweet)
+  }
+}
