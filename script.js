@@ -15,12 +15,12 @@ const taskMap = {
   },
   twitterFollow: {
     id: "twitterFollow",
-    url: "https://twitter.com/your_profile",
+    url: "https://x.com/Nadwallet",
     points: 100
   },
   retweet: {
     id: "retweet",
-    url: "https://twitter.com/your_profile/status/your_tweet_id",
+    url: "https://x.com/monad_xyz/status/1912174239194415250",
     points: 50
   }
 };
