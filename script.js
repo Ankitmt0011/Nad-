@@ -3,18 +3,20 @@ let totalReferrals = 0;
 let completedTasks = {};
 
 const taskMap = {
-  telegram: {
-    id: "telegram",
+  telegram1: {
+    id: "telegram1",
     url: "https://t.me/nadwalletofficial",
-    points: 100
+    points: 100,
+    channel: "@nadwalletofficial"
   },
   telegram2: {
     id: "telegram2",
     url: "https://t.me/anotherchannel",
-    points: 100
+    points: 100,
+    channel: "@anotherchannel"
   },
-  twitterFollow: {
-    id: "twitterFollow",
+  twitterFollow1: {
+    id: "twitterFollow1",
     url: "https://x.com/Nadwallet",
     points: 100
   },
@@ -34,9 +36,6 @@ function switchTab(tab) {
   document.getElementById(`${tab}Tab`).classList.add("active");
 }
 
-document.getElementById("walletTab").onclick = () => switchTab("wallet");
-document.getElementById("tasksTab").onclick = () => switchTab("tasks");
-
 function updatePointsDisplay() {
   document.getElementById("totalPoints").innerText = totalPoints;
   document.getElementById("totalReferrals").innerText = totalReferrals;
@@ -50,13 +49,22 @@ function markTaskCompletedUI(taskId) {
   });
 }
 
-function setTaskCompleted(taskId, points) {
+async function setTaskCompleted(taskId, points) {
   completedTasks[taskId] = true;
   totalPoints += points;
   localStorage.setItem("points", totalPoints);
   localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
   markTaskCompletedUI(taskId);
   updatePointsDisplay();
+
+  // Persist to backend
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
+  await fetch('https://nad-wallet.onrender.com/save-task', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: userId, taskId, points })
+  });
 }
 
 function handleTaskClick(taskId) {
@@ -65,6 +73,28 @@ function handleTaskClick(taskId) {
 
   window.open(task.url, "_blank");
   setTaskCompleted(taskId, task.points);
+}
+
+async function verifyTelegramJoin(taskId) {
+  const task = taskMap[taskId];
+  const userId = localStorage.getItem("userId");
+  if (!userId) return alert("User ID not found.");
+
+  const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: userId, task: taskId, channel: task.channel })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    showToast(`${taskId} verified. +${task.points} ND awarded.`);
+    setTaskCompleted(taskId, task.points);
+    document.getElementById(`${taskId}-join`).style.display = "none";
+    document.getElementById(`${taskId}-verify`).style.display = "none";
+  } else {
+    alert(data.message || "Verification failed.");
+  }
 }
 
 function setReferralLink() {
@@ -91,25 +121,6 @@ function showToast(message) {
   });
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
-}
-
-function getReferralFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const referrer = params.get('ref');
-  if (referrer) {
-    localStorage.setItem('referrer', referrer);
-    console.log("Referral detected from:", referrer);
-  }
-}
-
-function rewardReferrer() {
-  const alreadyRewarded = localStorage.getItem('refRewarded');
-  const referrer = localStorage.getItem('referrer');
-
-  if (referrer && !alreadyRewarded) {
-    localStorage.setItem('refRewarded', 'true');
-    alert(`Thanks for joining! ${referrer} will receive 100 ND.`);
-  }
 }
 
 async function registerUser() {
@@ -155,43 +166,16 @@ async function fetchUserData(userId) {
   }
 }
 
-async function verifyTelegramJoin(taskId) {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return alert("User ID not found.");
-
-  const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: userId, taskId })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    showToast(`${taskId} verified. +100 ND awarded.`);
-    setTaskCompleted(taskId, 100);
-    document.getElementById(`${taskId}-join`).style.display = "none";
-    document.getElementById(`${taskId}-verify`).style.display = "none";
-  } else {
-    alert(data.message || "Verification failed.");
-  }
-}
-
 window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   registerUser();
   setReferralLink();
-  getReferralFromURL();
-  rewardReferrer();
 
   const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-  if (userId) {
-    fetchUserData(userId);
-  }
+  if (userId) fetchUserData(userId);
 
-  // Telegram task button handlers
-  ["telegram", "telegram2"].forEach(taskId => {
+  ["telegram1", "telegram2"].forEach(taskId => {
     const task = taskMap[taskId];
-
     const joinBtn = document.getElementById(`${taskId}-join`);
     const verifyBtn = document.getElementById(`${taskId}-verify`);
 
@@ -207,12 +191,10 @@ window.addEventListener('load', () => {
     }
   });
 
-  // Twitter follow
-  document.querySelector(`button[data-task="twitterFollow"]`)?.addEventListener("click", () => {
-    handleTaskClick("twitterFollow");
+  document.querySelector(`button[data-task="twitterFollow1"]`)?.addEventListener("click", () => {
+    handleTaskClick("twitterFollow1");
   });
 
-  // Retweet
   document.querySelector(`button[data-task="retweet"]`)?.addEventListener("click", () => {
     handleTaskClick("retweet");
   });
