@@ -1,24 +1,26 @@
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// MongoDB Connection
-const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) {
-  throw new Error("❌ MONGO_URI is not defined in environment variables.");
-}
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log("MongoDB connected"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
-mongoose.connect(mongoURI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
-
-// User schema and model
+// Mongoose schema and model
 const userSchema = new mongoose.Schema({
   id: Number,
   username: String,
@@ -29,42 +31,41 @@ const userSchema = new mongoose.Schema({
     telegram1: { type: Boolean, default: false },
     telegram2: { type: Boolean, default: false },
     twitterFollow1: { type: Boolean, default: false },
-    twitterFollow2: { type: Boolean, default: false },
     retweet: { type: Boolean, default: false }
   }
 });
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
-// Telegram webhook route
-app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN}`, async (req, res) => {
-  const message = req.body.message;
-  if (!message || !message.from) return res.sendStatus(200);
-
-  const { id, username, first_name } = message.from;
-  const chatId = message.chat.id;
-  const text = message.text || "";
-
-  let user = await User.findOne({ id });
-  if (!user) {
-    user = await User.create({ id, username, first_name });
+// Register user
+app.post('/register', async (req, res) => {
+  const { id, username, first_name } = req.body;
+  try {
+    let user = await User.findOne({ id });
+    if (!user) {
+      user = new User({ id, username, first_name });
+      await user.save();
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Registration error:", err.message);
+    res.status(500).json({ success: false });
   }
-
-  if (text.startsWith("/start")) {
-    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      chat_id: chatId,
-      text: "Welcome! Tap below to open your wallet:",
-      reply_markup: {
-        inline_keyboard: [[
-          { text: "Open Wallet", web_app: { url: "https://nadwallet.vercel.app/" } }
-        ]]
-      }
-    });
-  }
-
-  res.sendStatus(200);
 });
 
-// Generic Telegram task verifier
+// Get user data
+app.post('/user-data', async (req, res) => {
+  const { id } = req.body;
+  try {
+    const user = await User.findOne({ id });
+    if (!user) return res.status(404).json({ success: false });
+    res.json({ success: true, data: user });
+  } catch (err) {
+    console.error("User data fetch error:", err.message);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Verify Telegram channel join
 app.post('/verify-telegram-join', async (req, res) => {
   const { id, task, channel } = req.body;
 
@@ -101,48 +102,28 @@ app.post('/verify-telegram-join', async (req, res) => {
   }
 });
 
-// Get user data
-app.post('/user-data', async (req, res) => {
-  const { id } = req.body;
+// Save non-Telegram tasks (e.g., Twitter, retweet)
+app.post('/save-task', async (req, res) => {
+  const { id, taskId, points } = req.body;
+  if (!id || !taskId || !points) return res.status(400).json({ success: false, message: "Missing data" });
 
   try {
     const user = await User.findOne({ id });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    res.json({
-      success: true,
-      data: {
-        points: user.points,
-        completedTasks: user.completedTasks
-      }
-    });
+    if (!user.completedTasks[taskId]) {
+      user.completedTasks[taskId] = true;
+      user.points += points;
+      await user.save();
+    }
+
+    res.json({ success: true });
   } catch (err) {
-    console.error("Fetch user data error:", err.message);
+    console.error("Save task error:", err.message);
     res.status(500).json({ success: false });
   }
 });
 
-// Default route
-app.get("/", (req, res) => {
-  res.send("✅ Nad Wallet backend is running with Telegram Bot!");
-});
-
-// Start server and set webhook
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-
-  if (process.env.RENDER_EXTERNAL_URL) {
-    const webhookUrl = `${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.TELEGRAM_BOT_TOKEN}`;
-    try {
-      const res = await axios.get(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
-        params: { url: webhookUrl }
-      });
-      console.log("✅ Webhook set:", res.data);
-    } catch (err) {
-      console.error("❌ Webhook setup failed:", err.response?.data || err.message);
-    }
-  } else {
-    console.warn("⚠️ RENDER_EXTERNAL_URL not set. Webhook not configured.");
-  }
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
