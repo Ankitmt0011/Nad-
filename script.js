@@ -13,19 +13,9 @@ const taskMap = {
     url: "https://t.me/anotherchannel",
     points: 100
   },
-  telegram3: {
-    id: "telegram3",
-    url: "https://t.me/thirdchannel",
-    points: 100
-  },
   twitterFollow: {
     id: "twitterFollow",
     url: "https://twitter.com/your_profile",
-    points: 100
-  },
-  twitterFollow2: {
-    id: "twitterFollow2",
-    url: "https://twitter.com/another_profile",
     points: 100
   },
   retweet: {
@@ -158,6 +148,8 @@ async function fetchUserData(userId) {
     Object.keys(completedTasks).forEach(taskId => {
       if (completedTasks[taskId]) {
         markTaskCompletedUI(taskId);
+        const verifyBtn = document.getElementById(`${taskId}-verify`);
+        if (verifyBtn) verifyBtn.style.display = "none";
       }
     });
   }
@@ -184,7 +176,6 @@ async function verifyTelegramJoin(taskId) {
   }
 }
 
-// Load on page open
 window.addEventListener('load', () => {
   Telegram.WebApp.ready();
   registerUser();
@@ -196,4 +187,33 @@ window.addEventListener('load', () => {
   if (userId) {
     fetchUserData(userId);
   }
+
+  // Telegram task button handlers
+  ["telegram", "telegram2"].forEach(taskId => {
+    const task = taskMap[taskId];
+
+    const joinBtn = document.getElementById(`${taskId}-join`);
+    const verifyBtn = document.getElementById(`${taskId}-verify`);
+
+    if (joinBtn) {
+      joinBtn.addEventListener("click", () => {
+        window.open(task.url, "_blank");
+        verifyBtn.style.display = "inline-block";
+      });
+    }
+
+    if (verifyBtn) {
+      verifyBtn.addEventListener("click", () => verifyTelegramJoin(taskId));
+    }
+  });
+
+  // Twitter follow
+  document.querySelector(`button[data-task="twitterFollow"]`)?.addEventListener("click", () => {
+    handleTaskClick("twitterFollow");
+  });
+
+  // Retweet
+  document.querySelector(`button[data-task="retweet"]`)?.addEventListener("click", () => {
+    handleTaskClick("retweet");
+  });
 });
