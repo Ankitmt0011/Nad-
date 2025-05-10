@@ -25,13 +25,22 @@
       <p><strong>Total Referrals:</strong> <span id="totalReferrals">0</span></p>
     </div>
 
-    <!-- Telegram Task -->
+    <!-- Telegram Task 1 -->
     <div class="task">
-      <h3>Telegram</h3>
-      <p>Join our Telegram channel and receive a reward.</p>
+      <h3>Join Telegram Channel</h3>
+      <p>Join our main Telegram channel to earn 100 ND.</p>
       <p>100 ND</p>
-      <button id="joinTelegram">Start</button>
-      <button id="verifyTelegram" style="display:none;">Verify</button>
+      <button id="telegram-join" data-task="telegram">Start</button>
+      <button id="telegram-verify" style="display:none;">Verify</button>
+    </div>
+
+    <!-- Telegram Task 2 -->
+    <div class="task">
+      <h3>Join Second Channel</h3>
+      <p>Join our secondary channel and earn another 100 ND.</p>
+      <p>100 ND</p>
+      <button id="telegram2-join" data-task="telegram2">Start</button>
+      <button id="telegram2-verify" style="display:none;">Verify</button>
     </div>
 
     <!-- Twitter Follow Task -->
@@ -40,7 +49,7 @@
       <p>Follow our Twitter profile to get rewarded.</p>
       <div class="task-footer">
         <span>100 ND</span>
-        <button onclick="completeTask('twitterFollow')">Start</button>
+        <button data-task="twitterFollow">Start</button>
       </div>
     </div>
 
@@ -50,7 +59,7 @@
       <p>Retweet our pinned tweet to earn points.</p>
       <div class="task-footer">
         <span>50 ND</span>
-        <button onclick="completeTask('retweet')">Start</button>
+        <button data-task="retweet">Start</button>
       </div>
     </div>
 
