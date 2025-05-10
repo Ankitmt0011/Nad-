@@ -1,219 +1,143 @@
-let totalPoints = 0;
-let totalReferrals = 0;
-let completedTasks = {};
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-const taskMap = {
-  telegram: {
-    id: "telegram",
-    url: "https://t.me/nadwalletofficial",
-    points: 100
-  },
-  telegram2: {
-    id: "telegram2",
-    url: "https://t.me/anotherchannel",
-    points: 100
-  },
-  twitterFollow: {
-    id: "twitterFollow",
-    url: "https://twitter.com/your_profile",
-    points: 100
-  },
-  retweet: {
-    id: "retweet",
-    url: "https://twitter.com/your_profile/status/your_tweet_id",
-    points: 50
+const userId = tg.initDataUnsafe.user?.id;
+const BACKEND_URL = 'https://nad-wallet.onrender.com';
+
+// Sections
+const walletSection = document.getElementById('walletSection');
+const tasksSection = document.getElementById('tasksSection');
+const walletTab = document.getElementById('walletTab');
+const tasksTab = document.getElementById('tasksTab');
+
+// Score
+const totalPointsEl = document.getElementById('totalPoints');
+const totalReferralsEl = document.getElementById('totalReferrals');
+
+// Buttons
+const joinMainTelegramBtn = document.getElementById('joinTelegram');
+const verifyMainTelegramBtn = document.getElementById('verifyTelegram');
+const joinSecondTelegramBtn = document.getElementById('joinTelegram2');
+const twitterFollowBtn = document.getElementById('twitterFollow');
+const retweetBtn = document.getElementById('retweet');
+
+// Referral
+const refLinkInput = document.getElementById('refLink');
+
+// Tabs
+walletTab.onclick = () => {
+  walletSection.classList.remove('hidden');
+  tasksSection.classList.add('hidden');
+  walletTab.classList.add('active');
+  tasksTab.classList.remove('active');
+};
+
+tasksTab.onclick = () => {
+  tasksSection.classList.remove('hidden');
+  walletSection.classList.add('hidden');
+  tasksTab.classList.add('active');
+  walletTab.classList.remove('active');
+};
+
+// Referral link
+const refLink = `https://t.me/NadwalletBot?start=${userId}`;
+refLinkInput.value = refLink;
+
+function copyReferralLink() {
+  navigator.clipboard.writeText(refLinkInput.value);
+  alert('Referral link copied!');
+}
+
+async function fetchUserData() {
+  const res = await fetch(`${BACKEND_URL}/user/${userId}`);
+  const data = await res.json();
+  totalPointsEl.textContent = data.totalPoints || 0;
+  totalReferralsEl.textContent = data.referrals || 0;
+
+  // Update task buttons
+  if (data.tasks?.telegramMain) setCompleted(joinMainTelegramBtn);
+  if (data.tasks?.telegramSecond) setCompleted(joinSecondTelegramBtn);
+  if (data.tasks?.twitterFollow) setCompleted(twitterFollowBtn);
+  if (data.tasks?.retweet) setCompleted(retweetBtn);
+}
+
+function setCompleted(button) {
+  button.disabled = true;
+  button.textContent = 'Completed';
+}
+
+function openLink(link) {
+  window.open(link, '_blank');
+}
+
+joinMainTelegramBtn.onclick = () => {
+  openLink('https://t.me/Nadwallet');
+  verifyMainTelegramBtn.style.display = 'inline-block';
+};
+
+verifyMainTelegramBtn.onclick = async () => {
+  const res = await fetch(`${BACKEND_URL}/verify-telegram`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId })
+  });
+  const data = await res.json();
+  if (data.success) {
+    setCompleted(joinMainTelegramBtn);
+    verifyMainTelegramBtn.style.display = 'none';
+    fetchUserData();
+  } else {
+    alert('Please join the Telegram channel first.');
   }
 };
 
-function switchTab(tab) {
-  ["wallet", "tasks"].forEach(t => {
-    document.getElementById(`${t}Section`).classList.add("hidden");
-    document.getElementById(`${t}Tab`).classList.remove("active");
-  });
-  document.getElementById(`${tab}Section`).classList.remove("hidden");
-  document.getElementById(`${tab}Tab`).classList.add("active");
-}
-
-document.getElementById("walletTab").onclick = () => switchTab("wallet");
-document.getElementById("tasksTab").onclick = () => switchTab("tasks");
-
-function updatePointsDisplay() {
-  document.getElementById("totalPoints").innerText = totalPoints;
-  document.getElementById("totalReferrals").innerText = totalReferrals;
-}
-
-function markTaskCompletedUI(taskId) {
-  const buttons = document.querySelectorAll(`button[data-task="${taskId}"]`);
-  buttons.forEach(btn => {
-    btn.innerText = "Completed";
-    btn.disabled = true;
-  });
-}
-
-function setTaskCompleted(taskId, points) {
-  completedTasks[taskId] = true;
-  totalPoints += points;
-  localStorage.setItem("points", totalPoints);
-  localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
-  markTaskCompletedUI(taskId);
-  updatePointsDisplay();
-}
-
-function handleTaskClick(taskId) {
-  const task = taskMap[taskId];
-  if (!task || completedTasks[taskId]) return;
-
-  window.open(task.url, "_blank");
-  setTaskCompleted(taskId, task.points);
-}
-
-function setReferralLink() {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
-  const username = user?.username || user?.id;
-  const refLink = `https://t.me/nadwalletbot?start=${username}`;
-  document.getElementById('refLink').value = refLink;
-}
-
-function copyReferralLink() {
-  const refInput = document.getElementById('refLink');
-  refInput.select();
-  refInput.setSelectionRange(0, 99999);
-  navigator.clipboard.writeText(refInput.value).then(() => showToast("Referral link copied!"));
-}
-
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  Object.assign(toast.style, {
-    position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-    background: '#333', color: '#fff', padding: '10px 20px',
-    borderRadius: '20px', zIndex: '1000', fontSize: '14px'
-  });
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
-}
-
-function getReferralFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const referrer = params.get('ref');
-  if (referrer) {
-    localStorage.setItem('referrer', referrer);
-    console.log("Referral detected from:", referrer);
-  }
-}
-
-function rewardReferrer() {
-  const alreadyRewarded = localStorage.getItem('refRewarded');
-  const referrer = localStorage.getItem('referrer');
-
-  if (referrer && !alreadyRewarded) {
-    localStorage.setItem('refRewarded', 'true');
-    alert(`Thanks for joining! ${referrer} will receive 100 ND.`);
-  }
-}
-
-async function registerUser() {
-  const user = Telegram.WebApp.initDataUnsafe.user;
-  if (!user) return;
-
-  const res = await fetch('https://nad-wallet.onrender.com/register', {
+joinSecondTelegramBtn.onclick = async () => {
+  openLink('https://t.me/NadwalletGroup');
+  const res = await fetch(`${BACKEND_URL}/complete-task`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: user.id,
-      username: user.username,
-      first_name: user.first_name
-    })
+    body: JSON.stringify({ userId, task: 'telegramSecond' })
   });
-
   const data = await res.json();
   if (data.success) {
-    localStorage.setItem("userId", user.id);
-  }
-}
-
-async function fetchUserData(userId) {
-  const res = await fetch('https://nad-wallet.onrender.com/user-data', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: userId })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    totalPoints = data.data.points || 0;
-    completedTasks = data.data.completedTasks || {};
-    updatePointsDisplay();
-
-    Object.keys(completedTasks).forEach(taskId => {
-      if (completedTasks[taskId]) {
-        markTaskCompletedUI(taskId);
-        const verifyBtn = document.getElementById(`${taskId}-verify`);
-        if (verifyBtn) verifyBtn.style.display = "none";
-      }
-    });
-  }
-}
-
-async function verifyTelegramJoin(taskId) {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return alert("User ID not found.");
-
-  const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: userId, taskId })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    showToast(`${taskId} verified. +100 ND awarded.`);
-    setTaskCompleted(taskId, 100);
-    document.getElementById(`${taskId}-join`).style.display = "none";
-    document.getElementById(`${taskId}-verify`).style.display = "none";
+    setCompleted(joinSecondTelegramBtn);
+    fetchUserData();
   } else {
-    alert(data.message || "Verification failed.");
+    alert('You may have already completed this task.');
   }
-}
+};
 
-window.addEventListener('load', () => {
-  Telegram.WebApp.ready();
-  registerUser();
-  setReferralLink();
-  getReferralFromURL();
-  rewardReferrer();
-
-  const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-  if (userId) {
-    fetchUserData(userId);
+twitterFollowBtn.onclick = async () => {
+  openLink('https://x.com/Nadwallet');
+  const res = await fetch(`${BACKEND_URL}/complete-task`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, task: 'twitterFollow' })
+  });
+  const data = await res.json();
+  if (data.success) {
+    setCompleted(twitterFollowBtn);
+    fetchUserData();
+  } else {
+    alert('You may have already completed this task.');
   }
+};
 
-  // Telegram task button handlers
-  ["telegram", "telegram2"].forEach(taskId => {
-    const task = taskMap[taskId];
-
-    const joinBtn = document.getElementById(`${taskId}-join`);
-    const verifyBtn = document.getElementById(`${taskId}-verify`);
-
-    if (joinBtn) {
-      joinBtn.addEventListener("click", () => {
-        window.open(task.url, "_blank");
-        verifyBtn.style.display = "inline-block";
-      });
-    }
-
-    if (verifyBtn) {
-      verifyBtn.addEventListener("click", () => verifyTelegramJoin(taskId));
-    }
+retweetBtn.onclick = async () => {
+  openLink('https://x.com/monad_xyz/status/1912174239194415250');
+  const res = await fetch(`${BACKEND_URL}/complete-task`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, task: 'retweet' })
   });
+  const data = await res.json();
+  if (data.success) {
+    setCompleted(retweetBtn);
+    fetchUserData();
+  } else {
+    alert('You may have already completed this task.');
+  }
+};
 
-  // Twitter follow
-  document.querySelector(`button[data-task="twitterFollow"]`)?.addEventListener("click", () => {
-    handleTaskClick("twitterFollow");
-  });
-
-  // Retweet
-  document.querySelector(`button[data-task="retweet"]`)?.addEventListener("click", () => {
-    handleTaskClick("retweet");
-  });
-});
+// Initial fetch
+fetchUserData();
