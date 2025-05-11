@@ -2,6 +2,8 @@ let totalPoints = 0;
 let totalReferrals = 0;
 let completedTasks = {};
 
+const API_BASE = 'https://nad-wallet.onrender.com/api';
+
 const taskMap = {
   telegram1: {
     id: "telegram1",
@@ -57,10 +59,10 @@ async function setTaskCompleted(taskId, points) {
   markTaskCompletedUI(taskId);
   updatePointsDisplay();
 
-  // Persist to backend
   const userId = localStorage.getItem("userId");
   if (!userId) return;
-  await fetch('https://nad-wallet.onrender.com/save-task', {
+
+  await fetch(`${API_BASE}/tasks/save`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: userId, taskId, points })
@@ -70,7 +72,6 @@ async function setTaskCompleted(taskId, points) {
 function handleTaskClick(taskId) {
   const task = taskMap[taskId];
   if (!task || completedTasks[taskId]) return;
-
   window.open(task.url, "_blank");
   setTaskCompleted(taskId, task.points);
 }
@@ -80,7 +81,7 @@ async function verifyTelegramJoin(taskId) {
   const userId = localStorage.getItem("userId");
   if (!userId) return alert("User ID not found.");
 
-  const res = await fetch('https://nad-wallet.onrender.com/verify-telegram-join', {
+  const res = await fetch(`${API_BASE}/tasks/verify-telegram-join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: userId, task: taskId, channel: task.channel })
@@ -98,7 +99,7 @@ async function verifyTelegramJoin(taskId) {
 }
 
 function setReferralLink() {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  const user = Telegram.WebApp.initDataUnsafe.user;
   const username = user?.username || user?.id;
   const refLink = `https://t.me/nadwalletbot?start=${username}`;
   document.getElementById('refLink').value = refLink;
@@ -127,7 +128,7 @@ async function registerUser() {
   const user = Telegram.WebApp.initDataUnsafe.user;
   if (!user) return;
 
-  const res = await fetch('https://nad-wallet.onrender.com/register', {
+  const res = await fetch(`${API_BASE}/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -144,7 +145,7 @@ async function registerUser() {
 }
 
 async function fetchUserData(userId) {
-  const res = await fetch('https://nad-wallet.onrender.com/user-data', {
+  const res = await fetch(`${API_BASE}/users/user-data`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: userId })
